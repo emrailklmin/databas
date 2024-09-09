@@ -180,6 +180,9 @@ def finance():
 
         try:
             amount = float(amount)
+            if amount < 0:
+                flash("Amount cannot be negative.")
+                return redirect(url_for('finance'))
         except ValueError:
             flash("Invalid amount. Please enter a valid number.")
             return redirect(url_for('finance'))
