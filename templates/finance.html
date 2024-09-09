@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Personal Finance Tracker</h2>
+
+        <!-- Form for adding incomes and expenses -->
+        <form method="POST" class="mb-3">
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label for="description">Description</label>
+                    <input type="text" class="form-control" id="description" name="description" placeholder="Description" required>
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="amount">Amount</label>
+                    <input type="number" class="form-control" id="amount" name="amount" placeholder="Amount" required>
+                </div>
+                <div class="form-group col-md-3">
+                    <label for="type">Type</label>
+                    <select class="form-control" id="type" name="type">
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+                </div>
+                <div class="form-group col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Add</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Display incomes and expenses -->
+        <div class="row">
+            <div class="col-md-6">
+                <h4>Incomes</h4>
+                <ul class="list-group">
+                    {% for income in incomes %}
+                        <li class="list-group-item">{{ income.description }} - ${{ income.amount }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h4>Expenses</h4>
+                <ul class="list-group">
+                    {% for expense in expenses %}
+                        <li class="list-group-item">{{ expense.description }} - ${{ expense.amount }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Display total and net results -->
+        <div class="mt-4">
+            <h4>Summary</h4>
+            <p>Total Income: ${{ total_income }}</p>
+            <p>Total Expenses: ${{ total_expenses }}</p>
+            <h5>Net Result: ${{ net_result }}</h5>
+        </div>
+    </div>
+</body>
+</html>
