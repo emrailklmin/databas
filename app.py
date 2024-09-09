@@ -13,12 +13,60 @@ def get_db_connection():
     conn = pyodbc.connect(connection_string)
     return conn
 
+# Create a table for storing user data
+conn_create_table = get_db_connection()
+cursor = conn_create_table.cursor()
+create_table_query = """
+    IF NOT EXISTS (
+        SELECT * FROM sys.tables WHERE name = 'financeapp'
+    )
+    BEGIN
+        CREATE TABLE financeapp (
+            username NVARCHAR(100) PRIMARY KEY,
+            password NVARCHAR(255),
+            income VARBINARY(MAX),
+            cost VARBINARY(MAX),
+            savings VARBINARY(MAX)
+        )
+    END
+    """
+cursor.execute(create_table_query)
+conn_create_table.commit()
+conn_create_table.close()
+
+
+
 incomes = {}
 expenses = {}
 savings = {}
 
 @app.route('/')
 def home():
+    return render_template('login.html')
+
+# Route for login page
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')  # Placeholder for username input
+        password = request.form.get('password')  # Placeholder for password input
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if the user exists in the database
+        query = "SELECT * FROM financeapp WHERE username = ? AND password = ?"
+        cursor.execute(query, (username, password))
+        user = cursor.fetchone()
+        
+        if user:
+            flash("Login successful!", "success")
+            return redirect(url_for('home'))
+        else:
+            flash("Invalid username or password.", "danger")
+        
+        conn.close()
+
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -31,7 +79,7 @@ def register():
         cursor = conn.cursor()
         
         # Check if the user already exists
-        query = "SELECT * FROM users WHERE username = ?"
+        query = "SELECT * FROM financeapp WHERE username = ?"
         cursor.execute(query, (username,))
         user = cursor.fetchone()
         
@@ -39,7 +87,7 @@ def register():
             flash("User already exists. Please login.", "warning")
         else:
             # Add user to the database
-            insert_query = "INSERT INTO users (username, password) VALUES (?, ?)"
+            insert_query = "INSERT INTO financeapp (username, password) VALUES (?, ?)"
             cursor.execute(insert_query, (username, password))
             conn.commit()
             flash("Registration successful! Please login.", "success")
