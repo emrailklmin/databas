@@ -15,6 +15,7 @@ def get_db_connection():
 
 incomes = {}
 expenses = {}
+savings = {}
 
 @app.route('/')
 def home():
@@ -50,7 +51,7 @@ def register():
 
 @app.route('/finance', methods=['GET', 'POST'])
 def finance_page():
-    global incomes, expenses
+    global incomes, expenses, savings
     
     # Handle form submission
     if request.method == 'POST':
@@ -61,15 +62,19 @@ def finance_page():
         # Add to the appropriate dictionary
         if type_of_entry == 'income':
             incomes[description] = amount
-        else:
+        elif type_of_entry == 'expense':
             expenses[description] = amount
+        elif type_of_entry == 'savings':
+            savings[description] = amount
 
     # Calculate total income and expenses
     total_income = sum(incomes.values())
     total_expenses = sum(expenses.values())
+    total_savings = sum(savings.values())
     net_result = total_income - total_expenses
+    net_result_after_savings = net_result - total_savings
 
-    return render_template('finance.html', incomes=incomes, expenses=expenses, total_income=total_income, total_expenses=total_expenses, net_result=net_result)
+    return render_template('finance.html', incomes=incomes, expenses=expenses, savings=savings, total_income=total_income, total_expenses=total_expenses, total_savings=total_savings, net_result=net_result, net_result_after_savings=net_result_after_savings)
 
 if __name__ == '__main__':
     # Run the app on port 8000

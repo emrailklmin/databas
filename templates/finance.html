@@ -10,7 +10,7 @@
     <div class="container mt-5">
         <h2>Personal Finance Tracker</h2>
 
-        <!-- Form for adding incomes and expenses -->
+        <!-- Form for adding incomes, expenses, and savings -->
         <form method="POST" class="mb-3">
             <div class="form-row">
                 <div class="form-group col-md-4">
@@ -26,6 +26,7 @@
                     <select class="form-control" id="type" name="type">
                         <option value="income">Income</option>
                         <option value="expense">Expense</option>
+                        <option value="savings">Savings</option> 
                     </select>
                 </div>
                 <div class="form-group col-md-2 d-flex align-items-end">
@@ -34,21 +35,29 @@
             </div>
         </form>
 
-        <!-- Display incomes and expenses -->
+        <!-- Display incomes, expenses, and savings -->
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h4>Incomes</h4>
                 <ul class="list-group">
-                    {% for income in incomes %}
-                        <li class="list-group-item">{{ income.description }} - ${{ income.amount }}</li>
+                    {% for description, amount in incomes.items() %}
+                        <li class="list-group-item">{{ description }} - {{ amount }} kr</li>
                     {% endfor %}
                 </ul>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <h4>Expenses</h4>
                 <ul class="list-group">
-                    {% for expense in expenses %}
-                        <li class="list-group-item">{{ expense.description }} - ${{ expense.amount }}</li>
+                    {% for description, amount in expenses.items() %}
+                        <li class="list-group-item">{{ description }} - {{ amount }} kr</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h4>Savings</h4> 
+                <ul class="list-group">
+                    {% for description, amount in savings.items() %}
+                        <li class="list-group-item">{{ description }} - {{ amount }} kr</li>
                     {% endfor %}
                 </ul>
             </div>
@@ -57,9 +66,11 @@
         <!-- Display total and net results -->
         <div class="mt-4">
             <h4>Summary</h4>
-            <p>Total Income: ${{ total_income }}</p>
-            <p>Total Expenses: ${{ total_expenses }}</p>
-            <h5>Net Result: ${{ net_result }}</h5>
+            <p>Total Income: {{ total_income }} kr</p>
+            <p>Total Expenses: {{ total_expenses }} kr</p>
+            <h5>Net Result: {{ net_result }} kr</h5>
+            <p>Savings: - {{total_savings}}</p>
+            <h5>Net Result After Savings: {{net_result_after_savings}}</h5>
         </div>
     </div>
 </body>
