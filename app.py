@@ -1,5 +1,17 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash
+import pyodbc
+import pickle
+from credentials import SQL_SERVER  # Import hidden credentials
+
 app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Required for flash messages
+
+# Database connection settings using credentials from the hidden file
+connection_string = f'Driver={SQL_SERVER["driver"]};Server=tcp:{SQL_SERVER["server"]},1433;Database={SQL_SERVER["database"]};Uid={SQL_SERVER["username"]};Pwd={SQL_SERVER["password"]};Encrypt=yes;TrustServerCertificate=no;Connection Timeout=30;'
+
+def get_db_connection():
+    conn = pyodbc.connect(connection_string)
+    return conn
 
 incomes = {}
 expenses = {}
@@ -8,8 +20,32 @@ expenses = {}
 def home():
     return render_template('login.html')
 
-@app.route('/register')
+@app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        username = request.form.get('username')  # Placeholder for username input
+        password = request.form.get('password')  # Placeholder for password input
+
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Check if the user already exists
+        query = "SELECT * FROM users WHERE username = ?"
+        cursor.execute(query, (username,))
+        user = cursor.fetchone()
+        
+        if user:
+            flash("User already exists. Please login.", "warning")
+        else:
+            # Add user to the database
+            insert_query = "INSERT INTO users (username, password) VALUES (?, ?)"
+            cursor.execute(insert_query, (username, password))
+            conn.commit()
+            flash("Registration successful! Please login.", "success")
+            return redirect(url_for('login'))
+
+        conn.close()
+
     return render_template('register.html')
 
 @app.route('/finance', methods=['GET', 'POST'])
