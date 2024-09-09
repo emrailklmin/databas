@@ -222,7 +222,59 @@ def finance():
         # After form submission, redirect back to the finance page (GET request)
         return redirect(url_for('finance'))
 
+@app.route('/delete_entry', methods=['POST'])
+def delete_entry():
+    username = session.get('username')
+    if not username:
+        flash("You must be logged in to delete data.")
+        return redirect(url_for('login'))
 
+    # Retrieve form data
+    type_of_entry = request.form.get('type')
+    description = request.form.get('description')
+
+    # Connect to the database
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Retrieve existing data for the logged-in user
+    query = "SELECT income, cost, savings FROM financeapp WHERE username = ?"
+    cursor.execute(query, (username,))
+    result = cursor.fetchone()
+
+    if result:
+        incomes = pickle.loads(result[0]) if result[0] else {}
+        expenses = pickle.loads(result[1]) if result[1] else {}
+        savings = pickle.loads(result[2]) if result[2] else {}
+
+    # Remove the data based on the type of entry
+    if type_of_entry == 'Income':
+        if description in incomes:
+            del incomes[description]
+    elif type_of_entry == 'Expense':
+        if description in expenses:
+            del expenses[description]
+    elif type_of_entry == 'Savings':
+        if description in savings:
+            del savings[description]
+
+    # Save the updated data back to the database
+    update_query = """
+        UPDATE financeapp 
+        SET income = ?, cost = ?, savings = ? 
+        WHERE username = ?
+    """
+    cursor.execute(update_query, (
+        pickle.dumps(incomes),  # Serialize incomes
+        pickle.dumps(expenses),  # Serialize expenses
+        pickle.dumps(savings),  # Serialize savings
+        username
+    ))
+    conn.commit()
+    conn.close()
+
+    # Redirect back to the finance page
+    return redirect(url_for('finance'))
 
 
 # @app.route('/finance', methods=['GET', 'POST'])
