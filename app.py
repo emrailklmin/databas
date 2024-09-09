@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, redirect, url_for
 import pyodbc
 import pickle
-from credentials import SQL_SERVER  # Import hidden credentials
+from credentials_public import SQL_SERVER  # Import hidden credentials
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Required for flash messages
