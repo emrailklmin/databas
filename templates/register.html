@@ -69,7 +69,7 @@
 <body>
     <div class="register-container">
         <h2>Register</h2>
-        <form action="register.php" method="POST">
+        <form action="{{ url_for('register') }}" method="POST">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required><br>
 
@@ -81,7 +81,7 @@
 
         <!-- Back to Login -->
         <div class="login-link">
-            <p>Already have an account? <a href="login.html">Login here</a></p>
+            <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
         </div>
     </div>
 </body>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for
 import pyodbc
 import pickle
 from credentials import SQL_SERVER  # Import hidden credentials
@@ -34,8 +34,6 @@ cursor.execute(create_table_query)
 conn_create_table.commit()
 conn_create_table.close()
 
-
-
 incomes = {}
 expenses = {}
 savings = {}
@@ -44,61 +42,70 @@ savings = {}
 def home():
     return render_template('login.html')
 
-# Route for login page
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    message = ""  # Initialize an empty message
     if request.method == 'POST':
-        username = request.form.get('username')  # Placeholder for username input
-        password = request.form.get('password')  # Placeholder for password input
+        username = request.form.get('username')
+        password = request.form.get('password')
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Check if the user exists in the database
-        query = "SELECT * FROM financeapp WHERE username = ? AND password = ?"
-        cursor.execute(query, (username, password))
-        user = cursor.fetchone()
-        
-        if user:
-            flash("Login successful!", "success")
-            return redirect(url_for('home'))
-        else:
-            flash("Invalid username or password.", "danger")
-        
-        conn.close()
 
-    return render_template('login.html')
+        try:
+            # Check if the user exists in the database
+            query = "SELECT * FROM financeapp WHERE username = ? AND password = ?"
+            cursor.execute(query, (username, password))
+            user = cursor.fetchone()
+
+            if user:
+                message = "Login successful!"
+                return redirect(url_for('finance_page'))  # Redirect to the finance page after successful login
+            else:
+                message = "Invalid username or password."
+        except Exception as e:
+            message = f"An error occurred: {e}"
+        finally:
+            conn.close()
+
+    return render_template('login.html', message=message)
+
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    message = ""
     if request.method == 'POST':
-        username = request.form.get('username')  # Placeholder for username input
-        password = request.form.get('password')  # Placeholder for password input
+        username = request.form.get('username')
+        password = request.form.get('password')
 
         conn = get_db_connection()
         cursor = conn.cursor()
-        
-        # Check if the user already exists
-        query = "SELECT * FROM financeapp WHERE username = ?"
-        cursor.execute(query, (username,))
-        user = cursor.fetchone()
-        
-        if user:
-            flash("User already exists. Please login.", "warning")
-        else:
-            # Add user to the database
-            insert_query = "INSERT INTO financeapp (username, password) VALUES (?, ?)"
-            cursor.execute(insert_query, (username, password))
-            conn.commit()
-            flash("Registration successful! Please login.", "success")
-            return redirect(url_for('login'))
 
-        conn.close()
+        try:
+            # Check if the user already exists
+            query = "SELECT * FROM financeapp WHERE username = ?"
+            cursor.execute(query, (username,))
+            user = cursor.fetchone()
 
-    return render_template('register.html')
+            if user:
+                message = "User already exists. Please login."
+            else:
+                # Insert new user into the database
+                insert_query = "INSERT INTO financeapp (username, password) VALUES (?, ?)"
+                cursor.execute(insert_query, (username, password))
+                conn.commit()
+                return redirect(url_for('login'))  # Redirect to login page on success
+        except Exception as e:
+            message = f"An error occurred: {e}"
+        finally:
+            conn.close()
+
+    # Always return a template at the end of the function
+    return render_template('register.html', message=message)
+
 
 @app.route('/finance', methods=['GET', 'POST'])
-def finance_page():
+def finance():
     global incomes, expenses, savings
     
     # Handle form submission
