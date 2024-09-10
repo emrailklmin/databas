@@ -146,7 +146,7 @@ def finance():
         total_expenses = sum(expenses.values())
         total_savings = sum(savings.values())
         net_result = total_income - total_expenses
-        net_result_after_savings = net_result - total_savings
+        net_result_after_savings = "{:,.0f}".format(net_result - total_savings).replace(',', ' ')
 
         # Close the connection after data retrieval
         conn.close()
