@@ -142,13 +142,16 @@ def finance():
             savings = pickle.loads(result[2]) if result[2] else {}
 
         # Calculate the totals
-        total_income = "{:,.0f}".format(sum(incomes.values())).replace(',', ' ')
-        total_expenses = "{:,.0f}".format(sum(expenses.values())).replace(',', ' ')
-        total_savings = "{:,.0f}".format(sum(savings.values())).replace(',', ' ')
+        total_income = sum(incomes.values())
+        total_expenses = sum(expenses.values())
+        total_savings = sum(savings.values())
         net_result = total_income - total_expenses
         net_result_after_savings = net_result - total_savings
 
         # Format the totals with spaces for thousands separator
+        total_income = "{:,.0f}".format(total_income).replace(',', ' ')
+        total_expenses = "{:,.0f}".format(total_expenses).replace(',', ' ')
+        total_savings = "{:,.0f}".format(total_savings).replace(',', ' ')
         net_result = "{:,.0f}".format(net_result).replace(',', ' ')
         net_result_after_savings = "{:,.0f}".format(net_result_after_savings).replace(',', ' ')
 
