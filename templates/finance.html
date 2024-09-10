@@ -47,12 +47,26 @@
         }
         .summary-container div {
             flex: 1;
+            min-width: 180px;
             padding: 20px;
             background-color: white;
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin: 10px;
             text-align: center;
+        }
+        .summary-container button {
+        padding: 3px 7px;
+        font-size: 12px;
+        border: none;
+        border-radius: 3px;
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        }
+
+        .summary-container button:hover {
+        background-color: #007bff;
         }
         .logout-container {
             margin-top: 20px;
@@ -88,7 +102,13 @@
                 <h2>Incomes</h2>
                 <ul>
                     {% for description, amount in incomes.items() %}
-                        <li>{{ description }} - {{ amount }} kr</li>
+                        <li>{{ description }} - {{ amount }} kr
+                            <form action="{{ url_for('delete_entry') }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="type" value="Income">
+                                <input type="hidden" name="description" value="{{ description }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -96,7 +116,13 @@
                 <h2>Expenses</h2>
                 <ul>
                     {% for description, amount in expenses.items() %}
-                        <li>{{ description }} - {{ amount }} kr</li>
+                        <li>{{ description }} - {{ amount }} kr
+                            <form action="{{ url_for('delete_entry') }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="type" value="Expense">
+                                <input type="hidden" name="description" value="{{ description }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
@@ -104,7 +130,13 @@
                 <h2>Savings</h2>
                 <ul>
                     {% for description, amount in savings.items() %}
-                        <li>{{ description }} - {{ amount }} kr</li>
+                        <li>{{ description }} - {{ amount }} kr
+                            <form action="{{ url_for('delete_entry') }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="type" value="Savings">
+                                <input type="hidden" name="description" value="{{ description }}">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </li>
                     {% endfor %}
                 </ul>
             </div>
