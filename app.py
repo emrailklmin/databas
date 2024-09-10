@@ -145,8 +145,12 @@ def finance():
         total_income = "{:,.0f}".format(sum(incomes.values())).replace(',', ' ')
         total_expenses = "{:,.0f}".format(sum(expenses.values())).replace(',', ' ')
         total_savings = "{:,.0f}".format(sum(savings.values())).replace(',', ' ')
-        net_result = "{:,.0f}".format(total_income - total_expenses).replace(',', ' ')
-        net_result_after_savings = "{:,.0f}".format(net_result - total_savings).replace(',', ' ')
+        net_result = total_income - total_expenses
+        net_result_after_savings = net_result - total_savings
+
+        # Format the totals with spaces for thousands separator
+        net_result = "{:,.0f}".format(net_result).replace(',', ' ')
+        net_result_after_savings = "{:,.0f}".format(net_result_after_savings).replace(',', ' ')
 
         # Close the connection after data retrieval
         conn.close()
