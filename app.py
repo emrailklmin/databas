@@ -142,10 +142,10 @@ def finance():
             savings = pickle.loads(result[2]) if result[2] else {}
 
         # Calculate the totals
-        total_income = sum(incomes.values())
-        total_expenses = sum(expenses.values())
-        total_savings = sum(savings.values())
-        net_result = total_income - total_expenses
+        total_income = "{:,.0f}".format(sum(incomes.values())).replace(',', ' ')
+        total_expenses = "{:,.0f}".format(sum(expenses.values())).replace(',', ' ')
+        total_savings = "{:,.0f}".format(sum(savings.values())).replace(',', ' ')
+        net_result = "{:,.0f}".format(total_income - total_expenses).replace(',', ' ')
         net_result_after_savings = "{:,.0f}".format(net_result - total_savings).replace(',', ' ')
 
         # Close the connection after data retrieval
