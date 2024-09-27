@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meny</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .menu-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .menu-container h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .menu-container a {
+            display: block;
+            margin: 10px 0;
+            text-decoration: none;
+            color: #007bff;
+            font-size: 18px;
+        }
+        .menu-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="menu-container">
+        <h2>Välkommen till Menyn</h2>
+        <a href="{{ url_for('create_budget') }}">Skapa ny månadsbudget</a>
+        <a href="{{ url_for('savings_forecast') }}">Se prognos för sparande</a>
+    </div>
+</body>
+</html>

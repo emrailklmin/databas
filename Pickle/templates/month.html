@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Month</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .form-container, .savings-container {
+            flex: 1; /* Gör att containrarna växer lika mycket */
+            min-width: 180px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            text-align: center;
+        }
+        select, button {
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .month-container {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+        .logout-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .savings-container button {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: white;
+        cursor: pointer;
+        }
+        .savings-container button:hover {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        }
+        h2 {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Personal Finance Tracker</h1>
+
+    <div class="container">
+        <!-- Month Selection Form -->
+        <div class="month-container form-container">
+            <h2>Select a Month for Finance Tracking</h2>
+            <form action="{{ url_for('month') }}" method="POST">
+                <label for="month">Choose a month:</label>
+                <select name="month" id="month">
+                    {% for month in months %}
+                    <option value="{{ month }}">{{ month }}</option>
+                    {% endfor %}
+                </select>
+                <button type="submit">Select Month</button>
+            </form>
+        </div>
+
+        <!-- Länk till Savings Graph -->
+        <div class="savings-container">
+            <p>See your savings</p>
+            <a href="{{ url_for('savings_graph') }}" method="GET">
+            <button type="submit">Goto Savings</button>
+        </div>
+
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
