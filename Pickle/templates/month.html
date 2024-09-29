@@ -21,7 +21,7 @@
             flex-direction: column;
             align-items: center;
         }
-        .form-container, .savings-container {
+        .form-container {
             flex: 1; /* Gör att containrarna växer lika mycket */
             min-width: 180px;
             padding: 20px;
@@ -48,12 +48,17 @@
         }
         .month-container {
             width: 100%;
-            max-width: 400px;
-            margin-bottom: 20px;
+            max-width: 600px;
+            margin-bottom: 40px;
         }
         .logout-container {
             margin-top: 20px;
             text-align: center;
+        }
+        .savings-container {
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 40px;
         }
         .savings-container button {
         padding: 10px;
@@ -68,7 +73,8 @@
         cursor: pointer;
         }
         h2 {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            font-size: 22px;
         }
     </style>
 </head>
@@ -92,15 +98,16 @@
         </div>
 
         <!-- Länk till Savings Graph -->
-        <div class="savings-container">
-            <p>See your savings</p>
-            <a href="{{ url_for('savings_graph') }}" method="GET">
-            <button type="submit">Goto Savings</button>
+        <div class="savings-container form-container">
+            <h2>See Your Savings</h2>
+            <a href="{{ url_for('savings_graph') }}">
+                <button type="submit">Goto Savings</button>
+            </a>
         </div>
 
         <!-- Logout Button -->
         <div class="logout-container">
-            <form action="{{ url_for('logout') }}" method="POST" style="display:inline;">
+            <form action="{{ url_for('logout') }}" method="GET">
                 <button type="submit">Logout</button>
             </form>
         </div>
