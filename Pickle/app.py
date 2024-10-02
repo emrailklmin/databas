@@ -6,6 +6,13 @@ import json
 import numpy as np
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
+# Ändra home page till Title, två boxes: 1 för budgetering och 1 för sparande kalkyl. (ta bort "choose month" --> goto budget)
+# Flytta över månadsvalet till budegeteringssidan, där default månad plockas via import Time.
+# Omstrukturera Summary (siffrorna och förklaringerna så att de är linjärt ovanför varandra).
+# Lägg till barchart höger om summary, kanske resultat + savings för varje månad.
+# Skapa kalkyl för sparande sidan. Utgå från savings_graph.html
+# Lägg till CSS för att göra sidan snyggare.
+
 app = Flask(__name__)
 app.secret_key = 'supersecretkey'
 
