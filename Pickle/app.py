@@ -71,6 +71,7 @@ def register():
 
     return render_template('register.html')
 
+
 def generate_total_savings_graph(savings_per_month):
     max_savings = max(savings_per_month.values()) if savings_per_month else 0  # Hämta maximal sparande
     y_max = max_savings + 500 
@@ -278,6 +279,34 @@ def finance():
 
     session['total_savings'] = total_savings 
 
+    #prepare data for stacked bar chart
+    months = ['January', 'February', 'March', 'April', 'May', 
+              'June', 'July', 'August', 'September', 'October', 
+              'November', 'December']
+    
+    net_results = [] # Net result for each month
+    net_results_after_savings = [] # Net result after savings for each month
+
+    for m in months:
+        if m in data['finances'][username]:
+            month_data = data['finances'][username][m]
+            total_income_month = sum(month_data['Income'].values())
+            total_expenses_month = sum(month_data['Expense'].values())
+            total_savings_month = sum(month_data['Savings'].values())
+            net_result_month = total_income_month - total_expenses_month
+            net_result_after_savings_month = net_result_month - total_savings_month
+            
+            net_results.append(net_result_month)
+            net_results_after_savings.append(net_result_after_savings_month)
+        else:
+            net_results.append(0)
+            net_results_after_savings.append(0)
+
+    # Generate stacked bar chart
+    stacked_bar_chart_json = generate_stacked_bar_chart(months, net_results, net_results_after_savings)
+
+    print(stacked_bar_chart_json)
+
     return render_template('finance.html', 
                            incomes=finances['Income'], 
                            expenses=finances['Expense'], 
@@ -287,7 +316,40 @@ def finance():
                            net_result=net_result,
                            total_savings=total_savings,
                            net_result_after_savings=net_result_after_savings,
-                           month=month)
+                           month=month,
+                           stacked_bar_chart_json=stacked_bar_chart_json)  # Pass chart JSON to template)
+
+# Function to generate a stacked bar chart, used in finance.html
+def generate_stacked_bar_chart(months, net_results, net_results_after_savings):
+    fig = go.Figure()
+
+    # Add Net Result trace
+    fig.add_trace(go.Bar(
+        x=months,
+        y=net_results,
+        name='Net Result',
+        marker_color='blue',
+    ))
+
+    # Add Net Result After Savings trace
+    fig.add_trace(go.Bar(
+        x=months,
+        y=net_results_after_savings,
+        name='Net Result After Savings',
+        marker_color='lightblue',
+    ))
+
+    # Update layout for stacked bar chart
+    fig.update_layout(
+        barmode='stack',
+        title='Net Result and Net Result After Savings by Month',
+        xaxis_title='Months',
+        yaxis_title='Amount (kr)',
+        template='plotly_white',
+    )
+
+    # Convert figure to JSON
+    return json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
 
 
 # Route for deleting an entry
