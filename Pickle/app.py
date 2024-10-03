@@ -4,6 +4,7 @@ import plotly
 import plotly.graph_objs as go
 import json
 import numpy as np
+import time
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 
 # Ändra home page till Title, två boxes: 1 för budgetering och 1 för sparande kalkyl. (ta bort "choose month" --> goto budget)
