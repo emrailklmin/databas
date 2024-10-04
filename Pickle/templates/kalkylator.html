@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sparkapital Kalkylator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: left;
+        }
+        label {
+        display: block;
+        text-align: left;  /* Centrera labeln */
+        margin-bottom: 5px;  /* Ge lite mellanrum under labeln */
+        font-weight: bold;  /* Gör texten lite mer framträdande */
+        }
+        input[type="number"] {
+            width: 50%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            display: block;
+            appearance: none;
+        }
+        button {
+            width: 50%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px;
+            font-size: 18px;
+        }
+        button:hover {
+            background-color: #007bff;
+        }
+        #result-box {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            text-align: left;
+            display: none; 
+        }
+        #result-box h3 {
+            margin-bottom: 10px;
+            color: #007bff;
+        }
+        #result {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #333;
+        }
+        .return-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .return-button {
+            background: none;
+            border: none; 
+            color: #007bff; 
+            font-size: 18px; 
+            cursor: pointer; 
+        }
+        input[type="range"] {
+        width: 50%;
+        margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Return Button -->
+    <div class="return-container">
+        <form action="{{ url_for('month') }}" method="GET">
+            <button type="submit" class="return-button">
+                <i class="fas fa-arrow-left"></i> <!-- Pilikon -->
+            </button>
+        </form>
+    </div>
+
+    <div class="container">
+        <h2>Beräkna Förväntat Sparkapital</h2>
+        
+        <label for="initial-capital">Sparkapital:</label>
+        <input type="number" id="initial-capital" placeholder="Ange sparkapital" />
+        <input type="range" id="initial-capital-slider" min="0" max="2000000" step="10000" value="0" />
+    
+        <label for="monthly-savings">Månadssparande:</label>
+        <input type="number" id="monthly-savings" placeholder="Ange månadssparande" />
+        <input type="range" id="monthly-savings-slider" min="0" max="10000" step="100" value="0" />
+    
+        <label for="interest-rate">Förväntad ränta (%):</label>
+        <input type="number" id="interest-rate" placeholder="Ange ränta" />
+        <input type="range" id="interest-rate-slider" min="0" max="15" step="0.5" value="0" />
+    
+        <label for="months">Spartid i månader:</label>
+        <input type="number" id="months" placeholder="Ange antal månader" />
+    
+        <button onclick="calculate()">Beräkna</button>
+    
+        <div id="result-box">
+            <h3>Förväntat Sparkapital</h3>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Synkronisera sliders med inputs
+        const initialCapitalInput = document.getElementById("initial-capital");
+        const initialCapitalSlider = document.getElementById("initial-capital-slider");
+    
+        const monthlySavingsInput = document.getElementById("monthly-savings");
+        const monthlySavingsSlider = document.getElementById("monthly-savings-slider");
+    
+        const interestRateInput = document.getElementById("interest-rate");
+        const interestRateSlider = document.getElementById("interest-rate-slider");
+    
+        const monthsInput = document.getElementById("months");
+    
+        // Synkronisering för sparkapital
+        initialCapitalSlider.addEventListener("input", function() {
+            initialCapitalInput.value = initialCapitalSlider.value;
+        });
+    
+        initialCapitalInput.addEventListener("input", function() {
+            initialCapitalSlider.value = initialCapitalInput.value;
+        });
+    
+        // Synkronisering för månadssparande
+        monthlySavingsSlider.addEventListener("input", function() {
+            monthlySavingsInput.value = monthlySavingsSlider.value;
+        });
+    
+        monthlySavingsInput.addEventListener("input", function() {
+            monthlySavingsSlider.value = monthlySavingsInput.value;
+        });
+    
+        // Synkronisering för ränta
+        interestRateSlider.addEventListener("input", function() {
+            interestRateInput.value = interestRateSlider.value;
+        });
+    
+        interestRateInput.addEventListener("input", function() {
+            interestRateSlider.value = interestRateInput.value;
+        });
+    
+        // Synkronisering för månader
+        monthsSlider.addEventListener("input", function() {
+            monthsInput.value = monthsSlider.value;
+        });
+    
+        monthsInput.addEventListener("input", function() {
+            monthsSlider.value = monthsInput.value;
+        });
+    
+        // Funktion för att beräkna förväntat sparkapital
+        function calculate() {
+            const initialCapital = parseFloat(initialCapitalInput.value) || 0;
+            const monthlySavings = parseFloat(monthlySavingsInput.value) || 0;
+            const interestRate = parseFloat(interestRateInput.value) || 0;
+            const months = parseInt(monthsInput.value) || 0;
+    
+            // Beräkna förväntat kapital
+            const monthlyInterestRate = (interestRate / 100) / 12;
+            let totalAmount = initialCapital;
+    
+            for (let i = 0; i < months; i++) {
+                totalAmount += monthlySavings;
+                totalAmount *= (1 + monthlyInterestRate);
+            }
+    
+            // Visa resultat
+            document.getElementById("result").innerText = Math.round(totalAmount).toLocaleString('sv-SE') + " kr";
+            document.getElementById("result-box").style.display = "block";
+        }
+    </script>
+
+</body>
+</html>

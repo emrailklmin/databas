@@ -10,7 +10,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 # Flytta över månadsvalet till budegeteringssidan, där default månad plockas via import Time.
 # Omstrukturera Summary (siffrorna och förklaringerna så att de är linjärt ovanför varandra).
 # Lägg till barchart höger om summary, kanske resultat + savings för varje månad.
-# Skapa kalkyl för sparande sidan. Utgå från savings_graph.html
+# Skapa kalkyl för sparande sidan. Utgå från savings_graph.html, Trine
 # Lägg till CSS för att göra sidan snyggare.
 
 app = Flask(__name__)
@@ -70,137 +70,6 @@ def register():
 
     return render_template('register.html')
 
-def generate_total_savings_graph(savings_per_month):
-    max_savings = max(savings_per_month.values()) if savings_per_month else 0  # Hämta maximal sparande
-    y_max = max_savings + 500 
-    
-    # Skapa en Plotly-graf
-    fig = go.Figure(data=[
-        go.Scatter(
-            x=list(savings_per_month.keys()), 
-            y=list(savings_per_month.values()), 
-            mode='lines+markers',  # För linjediagram med markörer
-            name='Savings'
-        )
-    ])
-    
-    fig.update_layout(
-        title='Total Savings Overview',
-        xaxis_title='Months',
-        yaxis_title='Total Savings (kr)',
-        yaxis=dict(range=[0, y_max]),
-        template='plotly_white'  # Valfritt: Lägg till en vit bakgrund
-    )
-    # Konvertera grafen till JSON-format
-    savings_graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return savings_graph_json
-
-def generate_savings_forecast_graph(savings_per_month):
-    # Skapa en lista med ackumulerade sparanden
-    months = list(range(1, len(savings_per_month) + 1))
-    savings = list(savings_per_month.values())
-
-    # Beräkna ackumulerade besparingar
-    cumulative_savings = np.cumsum(savings)  # Cumulative sum of savings
-
-    # Om det finns tillräckligt med data, gör en linjär regression för prognos
-    if len(months) >= 2:
-        # Linjär regression baserad på ackumulerat sparande
-        coef, intercept = np.polyfit(months, cumulative_savings, 1)  # Linjär regression: y = coef*x + intercept
-
-        # Prognos för kommande 3 månader (ackumulerad)
-        future_months = list(range(len(months) + 1, len(months) + 4))  # Nästa 3 månader
-        forecast_savings = [coef * month + intercept for month in future_months]
-
-        # Beräkna ackumulerade prognosvärden (baserat på senaste ackumulerade värdet)
-        last_cumulative_saving = cumulative_savings[-1]
-        cumulative_forecast_savings = [last_cumulative_saving + (forecast - last_cumulative_saving) 
-                                       for forecast in forecast_savings]
-    else:
-        # Om vi inte har tillräckligt med data för att göra en prognos
-        future_months = []
-        cumulative_forecast_savings = []
-
-    # Skapa en Plotly-graf
-    fig = go.Figure()
-
-    # Historisk data (solid linje)
-    fig.add_trace(go.Scatter(
-        x=list(savings_per_month.keys()), 
-        y=np.append(cumulative_savings, cumulative_forecast_savings),  # Append forecasted savings to cumulative savings
-        mode='lines+markers', 
-        name='Cumulative Savings',
-        line=dict(color='blue')
-    ))
-
-    # Prognosdata (streckad linje för ackumulerad prognos)
-    if future_months:
-        # Använd månatliga etiketter för prognosen
-        forecast_months = list(savings_per_month.keys()) + [f"Month {i}" for i in future_months]
-        
-        # Prognos y-värden
-        y_forecast = list(cumulative_savings) + cumulative_forecast_savings  # Starta prognosen med det senaste ackumulerade värdet
-
-        fig.add_trace(go.Scatter(
-            x=forecast_months,  # Den sista månadens etikett och prognosetiketter
-            y=y_forecast,  # Det sista ackumulerade värdet och prognosvärden
-            mode='lines',
-            name='Forecast',
-            line=dict(color='red', dash='dash')  # Streckad linje för prognos
-        ))
-
-    # Justera y-axeln för att ha en marginal på 500 kr mer än högsta värdet
-    max_savings = max(np.append(cumulative_savings, cumulative_forecast_savings)) if len(cumulative_savings) > 0 else 0
-    y_max = max_savings + 500
-    
-    fig.update_layout(
-        title='Savings Forecast',
-        xaxis_title='Months',
-        yaxis_title='Total Savings (kr)',
-        yaxis=dict(range=[0, y_max]),  # Sätt intervallet för y-axeln
-        template='plotly_white'
-    )
-
-    # Konvertera grafen till JSON-format
-    graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    return graph_json
-
-# Route for displaying the savings graph
-@app.route('/savings_graph', methods=['GET'])
-def savings_graph():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-
-    data = load_data()
-    username = session['username']
-
-    # Samla in besparingar per månad
-    savings_per_month = {}
-    total_savings = 0 
-    accumulated_savings = 0 
-    months = ['January', 'February', 'March', 'April', 'May', 
-              'June', 'July', 'August', 'September', 'October', 
-              'November', 'December']
-
-    for month in months:
-        if username in data['finances'] and month in data['finances'][username]:
-            month_data = data['finances'][username][month]
-            month_savings = sum(month_data.get('Savings', {}).values())
-            accumulated_savings += month_savings  # Lägg till månadens sparande till ackumulerat värde
-            savings_per_month[month] = accumulated_savings
-        else:
-            savings_per_month[month] = accumulated_savings  # Om ingen sparing för denna månad, använd föregående ackumulerade
-
-    # Kontrollera om `total_savings` har ett värde
-    total_savings = accumulated_savings  # Totala sparandet blir ackumulerat sparande vid årets slut
-
-    # Generera grafen
-    savings_graph_json = generate_total_savings_graph(savings_per_month)
-    forecast_graph_json = generate_savings_forecast_graph(savings_per_month)
-
-    # Rendera den nya HTML-sidan för att visa grafen
-    return render_template('savings_graph.html', savings_graph_json=savings_graph_json, total_savings=total_savings, forecast_graph_json=forecast_graph_json)
-
 
 # Route for selecting month
 @app.route('/month', methods=['GET', 'POST'])
@@ -236,6 +105,13 @@ def month():
         savings_per_month[current_month] = session['total_savings']
     
     return render_template('month.html', months=months, savings_per_month=savings_per_month)
+
+@app.route('/savings_calculator')
+def savings_calculator():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    return render_template('kalkylator.html')
 
 # Route for Finance Tracker page
 @app.route('/finance', methods=['GET', 'POST'])
