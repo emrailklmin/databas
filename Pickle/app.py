@@ -245,11 +245,21 @@ def finance():
     if 'username' not in session:
         return redirect(url_for('login'))
 
-    if 'month' not in session:
-        return redirect(url_for('month'))
-
     data = load_data()
     username = session['username']
+    
+    # Handle month switch via POST request
+    if request.method == 'POST':
+        selected_month = request.form.get('selected_month', None)
+        if selected_month:
+            session['month'] = selected_month
+
+    # If no month has been selected yet, set the default to the current month
+    if 'month' not in session:
+        current_month = time.strftime('%B')  # Get the current month as a full name (e.g., 'October')
+        session['month'] = current_month
+
+    # Use the selected month from session
     month = session['month']
 
     # Create structure for user if it doesn't exist
@@ -260,15 +270,6 @@ def finance():
     if month not in data['finances'][username]:
         data['finances'][username][month] = {'Income': {}, 'Expense': {}, 'Savings': {}}
 
-    if request.method == 'POST':
-        description = request.form['description']
-        amount = float(request.form['amount'])
-        type = request.form['type']
-
-        # Save transaction under the correct month
-        data['finances'][username][month][type][description] = amount
-        save_data(data)
-
     # Retrieve financial data for the selected month
     finances = data['finances'][username][month]
     total_income = sum(finances['Income'].values())
@@ -277,15 +278,15 @@ def finance():
     net_result = total_income - total_expenses
     net_result_after_savings = net_result - total_savings
 
-    session['total_savings'] = total_savings 
+    session['total_savings'] = total_savings
 
-    #prepare data for stacked bar chart
+    # Prepare data for stacked bar chart
     months = ['January', 'February', 'March', 'April', 'May', 
               'June', 'July', 'August', 'September', 'October', 
               'November', 'December']
-    
-    net_results = [] # Net result for each month
-    net_results_after_savings = [] # Net result after savings for each month
+
+    savings = []
+    net_results_after_savings = []
 
     for m in months:
         if m in data['finances'][username]:
@@ -296,16 +297,14 @@ def finance():
             net_result_month = total_income_month - total_expenses_month
             net_result_after_savings_month = net_result_month - total_savings_month
             
-            net_results.append(net_result_month)
+            savings.append(total_savings_month)
             net_results_after_savings.append(net_result_after_savings_month)
         else:
-            net_results.append(0)
             net_results_after_savings.append(0)
+            savings.append(0)
 
     # Generate stacked bar chart
-    stacked_bar_chart_json = generate_stacked_bar_chart(months, net_results, net_results_after_savings)
-
-    print(stacked_bar_chart_json)
+    stacked_bar_chart_json = generate_stacked_bar_chart(months, net_results_after_savings, savings)
 
     return render_template('finance.html', 
                            incomes=finances['Income'], 
@@ -316,33 +315,50 @@ def finance():
                            net_result=net_result,
                            total_savings=total_savings,
                            net_result_after_savings=net_result_after_savings,
-                           month=month,
-                           stacked_bar_chart_json=stacked_bar_chart_json)  # Pass chart JSON to template)
+                           months=months,  # Pass months for dropdown
+                           current_month=month,  # Pass current selected month
+                           stacked_bar_chart_json=stacked_bar_chart_json)
 
 # Function to generate a stacked bar chart, used in finance.html
-def generate_stacked_bar_chart(months, net_results, net_results_after_savings):
+def generate_stacked_bar_chart(months, net_results_after_savings, savings):
     fig = go.Figure()
 
-    # Add Net Result trace
-    fig.add_trace(go.Bar(
-        x=months,
-        y=net_results,
-        name='Net Result',
-        marker_color='blue',
-    ))
+    # Calculate colors and adjust y-values for the bars
+    colors = ['red' if value < 0 else 'blue' for value in net_results_after_savings]
+    
+    adjusted_net_results_after_savings = []
+    adjusted_savings = []
+    
+    for net, saving in zip(net_results_after_savings, savings):
+        if net < 0:
+            # For negative net results, position savings above zero
+            adjusted_net_results_after_savings.append(net)  # Keep the negative net result
+            adjusted_savings.append(saving)  # Savings start from 0
+        else:
+            # For positive net results, stack savings on top
+            adjusted_net_results_after_savings.append(net)
+            adjusted_savings.append(saving)
 
     # Add Net Result After Savings trace
     fig.add_trace(go.Bar(
         x=months,
-        y=net_results_after_savings,
+        y=adjusted_net_results_after_savings,
         name='Net Result After Savings',
+        marker_color=colors,
+    ))
+
+    # Add Savings trace
+    fig.add_trace(go.Bar(
+        x=months,
+        y=adjusted_savings,
+        name='Savings',
         marker_color='lightblue',
     ))
 
     # Update layout for stacked bar chart
     fig.update_layout(
-        barmode='stack',
-        title='Net Result and Net Result After Savings by Month',
+        barmode='relative',  # Keep bars stacked relative to zero
+        title='Net Result After Savings and Savings by Month',
         xaxis_title='Months',
         yaxis_title='Amount (kr)',
         template='plotly_white',

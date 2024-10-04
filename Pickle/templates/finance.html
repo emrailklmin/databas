@@ -150,6 +150,18 @@
         </form>
     </div>
 
+    <!-- Month Select -->
+    <form method="POST" action="{{ url_for('finance') }}">
+        <label for="month-select">Select Month:</label>
+        <select id="month-select" name="selected_month" onchange="this.form.submit()">
+            {% for month_option in months %}
+                <option value="{{ month_option }}" {% if month_option == current_month %}selected{% endif %}>
+                    {{ month_option }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
     <div class="container">
         <!-- Form Section -->
         <div class="form-container">
@@ -247,7 +259,7 @@
 
             <script>
                 // Parse the JSON data passed from Flask
-                var stackedBarChartData = JSON.parse('{{ stacked_bar_chart_json|tojson|safe }}');
+                var stackedBarChartData = JSON.parse('{{ stacked_bar_chart_json|safe }}');
                 var stackedBarChartElement = document.getElementById('stacked-bar-chart');
 
                 // Plot the stacked bar chart
