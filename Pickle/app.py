@@ -248,25 +248,56 @@ def finance():
     data = load_data()
     username = session['username']
     
-    # Handle month switch via POST request
+    # Handle form submissions
     if request.method == 'POST':
-        selected_month = request.form.get('selected_month', None)
+        # Check if 'selected_month' is in the form data
+        selected_month = request.form.get('selected_month')
         if selected_month:
+            # Handle month selection
             session['month'] = selected_month
-
-    # If no month has been selected yet, set the default to the current month
+        else:
+            # Handle adding a new entry (Income, Expense, Savings)
+            entry_type = request.form.get('type')
+            description = request.form.get('description')
+            amount = request.form.get('amount')
+            
+            if entry_type and description and amount:
+                try:
+                    amount = float(amount)
+                except ValueError:
+                    flash('Invalid amount entered', 'error')
+                    return redirect(url_for('finance'))
+                
+                # Ensure the selected month is set
+                if 'month' not in session:
+                    current_month = time.strftime('%B')  # e.g., 'October'
+                    session['month'] = current_month
+                
+                month = session['month']
+                
+                # Initialize user and month data structures if they don't exist
+                if username not in data['finances']:
+                    data['finances'][username] = {}
+                if month not in data['finances'][username]:
+                    data['finances'][username][month] = {'Income': {}, 'Expense': {}, 'Savings': {}}
+                
+                # Add the new entry
+                data['finances'][username][month][entry_type][description] = amount
+                save_data(data)
+                
+                flash(f'{entry_type} entry added successfully!', 'success')
+                return redirect(url_for('finance'))
+    
+    # Set default month to current month if not already set
     if 'month' not in session:
-        current_month = time.strftime('%B')  # Get the current month as a full name (e.g., 'October')
+        current_month = time.strftime('%B')  # e.g., 'October'
         session['month'] = current_month
 
-    # Use the selected month from session
     month = session['month']
 
-    # Create structure for user if it doesn't exist
+    # Initialize data structures if necessary
     if username not in data['finances']:
         data['finances'][username] = {}
-
-    # Create structure for the month if it doesn't exist
     if month not in data['finances'][username]:
         data['finances'][username][month] = {'Income': {}, 'Expense': {}, 'Savings': {}}
 
@@ -281,14 +312,14 @@ def finance():
     session['total_savings'] = total_savings
 
     # Prepare data for stacked bar chart
-    months = ['January', 'February', 'March', 'April', 'May', 
-              'June', 'July', 'August', 'September', 'October', 
-              'November', 'December']
+    months_list = ['January', 'February', 'March', 'April', 'May', 
+                  'June', 'July', 'August', 'September', 'October', 
+                  'November', 'December']
 
     savings = []
     net_results_after_savings = []
 
-    for m in months:
+    for m in months_list:
         if m in data['finances'][username]:
             month_data = data['finances'][username][m]
             total_income_month = sum(month_data['Income'].values())
@@ -304,7 +335,7 @@ def finance():
             savings.append(0)
 
     # Generate stacked bar chart
-    stacked_bar_chart_json = generate_stacked_bar_chart(months, net_results_after_savings, savings)
+    stacked_bar_chart_json = generate_stacked_bar_chart(months_list, net_results_after_savings, savings)
 
     return render_template('finance.html', 
                            incomes=finances['Income'], 
@@ -315,7 +346,7 @@ def finance():
                            net_result=net_result,
                            total_savings=total_savings,
                            net_result_after_savings=net_result_after_savings,
-                           months=months,  # Pass months for dropdown
+                           months=months_list,  # Pass months for dropdown
                            current_month=month,  # Pass current selected month
                            stacked_bar_chart_json=stacked_bar_chart_json)
 
