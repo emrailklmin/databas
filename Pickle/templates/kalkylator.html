@@ -1,33 +1,75 @@
 <!DOCTYPE html>
-<html lang="sv">
+<html lang="en"></html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sparkapital Kalkylator</title>
+    <title>Savings Calculator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             padding: 20px;
         }
+
+        /* Header styling */
+        .header {
+            width: 100%;
+            padding: 20px;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 36px;
+            color: #3584d9;
+            border-bottom: 2px solid #ccc;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f0f0;
+            z-index: 1000; /* Ensure the header stays on top */
+        }
+        .header img {
+            height: 40px;
+            vertical-align: middle;
+            margin-right: 15px;
+        }
+
         .container {
             max-width: 400px;
-            margin: auto;
+            margin: 180px auto 0 auto; /* Adjust top margin to prevent overlap with the header */
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
+        .return-container {
+            position: fixed;
+            top: 100px; /* Align below the header */
+            left: 20px;
+        }
+
+        .return-button {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
         h2 {
             text-align: left;
         }
+
         label {
-        display: block;
-        text-align: left;  /* Centrera labeln */
-        margin-bottom: 5px;  /* Ge lite mellanrum under labeln */
-        font-weight: bold;  /* Gör texten lite mer framträdande */
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: bold;
         }
+
         input[type="number"] {
             width: 50%;
             padding: 10px;
@@ -37,6 +79,7 @@
             display: block;
             appearance: none;
         }
+
         button {
             width: 50%;
             padding: 10px;
@@ -49,9 +92,11 @@
             margin: 20px;
             font-size: 18px;
         }
+
         button:hover {
-            background-color: #007bff;
+            background-color: #3f6893;
         }
+
         #result-box {
             margin-top: 20px;
             padding: 20px;
@@ -61,72 +106,90 @@
             text-align: left;
             display: none; 
         }
+
         #result-box h3 {
             margin-bottom: 10px;
             color: #007bff;
         }
+
         #result {
             font-size: 1.2em;
             font-weight: bold;
             color: #333;
         }
-        .return-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-        }
-        .return-button {
-            background: none;
-            border: none; 
-            color: #007bff; 
-            font-size: 18px; 
-            cursor: pointer; 
-        }
+
         input[type="range"] {
-        width: 50%;
-        margin: 10px 0;
+            width: 50%;
+            margin: 10px 0;
+        }
+
+        .logout-container {
+            margin-right: 10%;
+        }
+        .logout-container button {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 18px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-
-    <!-- Return Button -->
+    
+    <!-- Elegant Header Section with Logo and Logout -->
+    <div class="header">
+        <!-- Logo and Title -->
+        <div class="logo-title">
+            <img src="{{ url_for('static', filename='$icon.webp') }}" alt="Logo">
+            Finance Tracker
+        </div>
+        
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <form action="{{ url_for('logout') }}" method="GET">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Return Button Positioned Outside Container -->
     <div class="return-container">
-        <form action="{{ url_for('month') }}" method="GET">
+        <form action="{{ url_for('finance_home') }}" method="GET">
             <button type="submit" class="return-button">
-                <i class="fas fa-arrow-left"></i> <!-- Pilikon -->
+                <i class="fas fa-arrow-left"></i> <!-- Arrow Icon -->
             </button>
         </form>
     </div>
 
     <div class="container">
-        <h2>Beräkna Förväntat Sparkapital</h2>
+        <h2>Calculate Expected Savings</h2>
         
-        <label for="initial-capital">Sparkapital:</label>
-        <input type="number" id="initial-capital" placeholder="Ange sparkapital" />
+        <label for="initial-capital">Initial Capital:</label>
+        <input type="number" id="initial-capital" placeholder="Enter initial capital" />
         <input type="range" id="initial-capital-slider" min="0" max="2000000" step="10000" value="0" />
     
-        <label for="monthly-savings">Månadssparande:</label>
-        <input type="number" id="monthly-savings" placeholder="Ange månadssparande" />
+        <label for="monthly-savings">Monthly Savings:</label>
+        <input type="number" id="monthly-savings" placeholder="Enter monthly savings" />
         <input type="range" id="monthly-savings-slider" min="0" max="10000" step="100" value="0" />
     
-        <label for="interest-rate">Förväntad ränta (%):</label>
-        <input type="number" id="interest-rate" placeholder="Ange ränta" />
+        <label for="interest-rate">Expected Interest Rate (%):</label>
+        <input type="number" id="interest-rate" placeholder="Enter interest rate" />
         <input type="range" id="interest-rate-slider" min="0" max="15" step="0.5" value="0" />
     
-        <label for="months">Spartid i månader:</label>
-        <input type="number" id="months" placeholder="Ange antal månader" />
+        <label for="months">Savings Period in Months:</label>
+        <input type="number" id="months" placeholder="Enter number of months" />
     
-        <button onclick="calculate()">Beräkna</button>
+        <button onclick="calculate()">Calculate</button>
     
         <div id="result-box">
-            <h3>Förväntat Sparkapital</h3>
+            <h3>Expected Savings</h3>
             <div id="result"></div>
         </div>
     </div>
 
     <script>
-        // Synkronisera sliders med inputs
+        // Synchronize sliders with inputs
         const initialCapitalInput = document.getElementById("initial-capital");
         const initialCapitalSlider = document.getElementById("initial-capital-slider");
     
@@ -138,7 +201,7 @@
     
         const monthsInput = document.getElementById("months");
     
-        // Synkronisering för sparkapital
+        // Synchronization for initial capital
         initialCapitalSlider.addEventListener("input", function() {
             initialCapitalInput.value = initialCapitalSlider.value;
         });
@@ -147,7 +210,7 @@
             initialCapitalSlider.value = initialCapitalInput.value;
         });
     
-        // Synkronisering för månadssparande
+        // Synchronization for monthly savings
         monthlySavingsSlider.addEventListener("input", function() {
             monthlySavingsInput.value = monthlySavingsSlider.value;
         });
@@ -156,7 +219,7 @@
             monthlySavingsSlider.value = monthlySavingsInput.value;
         });
     
-        // Synkronisering för ränta
+        // Synchronization for interest rate
         interestRateSlider.addEventListener("input", function() {
             interestRateInput.value = interestRateSlider.value;
         });
@@ -165,23 +228,14 @@
             interestRateSlider.value = interestRateInput.value;
         });
     
-        // Synkronisering för månader
-        monthsSlider.addEventListener("input", function() {
-            monthsInput.value = monthsSlider.value;
-        });
-    
-        monthsInput.addEventListener("input", function() {
-            monthsSlider.value = monthsInput.value;
-        });
-    
-        // Funktion för att beräkna förväntat sparkapital
+        // Function to calculate expected savings
         function calculate() {
             const initialCapital = parseFloat(initialCapitalInput.value) || 0;
             const monthlySavings = parseFloat(monthlySavingsInput.value) || 0;
             const interestRate = parseFloat(interestRateInput.value) || 0;
             const months = parseInt(monthsInput.value) || 0;
     
-            // Beräkna förväntat kapital
+            // Calculate expected savings
             const monthlyInterestRate = (interestRate / 100) / 12;
             let totalAmount = initialCapital;
     
@@ -190,8 +244,8 @@
                 totalAmount *= (1 + monthlyInterestRate);
             }
     
-            // Visa resultat
-            document.getElementById("result").innerText = Math.round(totalAmount).toLocaleString('sv-SE') + " kr";
+            // Display result
+            document.getElementById("result").innerText = Math.round(totalAmount).toLocaleString('en-US') + " kr";
             document.getElementById("result-box").style.display = "block";
         }
     </script>

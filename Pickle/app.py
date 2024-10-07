@@ -46,7 +46,7 @@ def login():
 
         if username in data['users'] and data['users'][username] == password:
             session['username'] = username
-            return redirect(url_for('month'))  # Redirect to month selection after login
+            return redirect(url_for('finance_home'))  # Redirect to month selection after login
         else:
             flash('Invalid credentials', 'error')
             return redirect(url_for('login'))
@@ -70,6 +70,12 @@ def register():
             return redirect(url_for('login'))
 
     return render_template('register.html')
+
+@app.route('/finance_home')
+def finance_home():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('finance_home.html')
 
 
 def generate_total_savings_graph(savings_per_month):
@@ -204,41 +210,6 @@ def savings_graph():
     return render_template('savings_graph.html', savings_graph_json=savings_graph_json, total_savings=total_savings, forecast_graph_json=forecast_graph_json)
 
 
-# Route for selecting month
-@app.route('/month', methods=['GET', 'POST'])
-def month():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    
-    data = load_data()
-    username = session['username']
-    
-    if request.method == 'POST':
-        selected_month = request.form['month']
-        session['month'] = selected_month
-        return redirect(url_for('finance'))
-    
-    # Display a list of months to choose from
-    months = ['January', 'February', 'March', 'April', 'May', 
-              'June', 'July', 'August', 'September', 'October', 
-              'November', 'December']
-    
-    savings_per_month = {}
-    for month in months:
-        if username in data['finances'] and month in data['finances'][username]:
-            month_data = data['finances'][username][month]
-            total_savings = sum(month_data.get('Savings', {}).values())
-            savings_per_month[month] = total_savings
-        else:
-            # If no data exists for this month, set savings to 0
-            savings_per_month[month] = 0
-
-    if 'total_savings' in session:
-        current_month = session.get('month')
-        savings_per_month[current_month] = session['total_savings']
-    
-    return render_template('month.html', months=months, savings_per_month=savings_per_month)
-
 @app.route('/savings_calculator')
 def savings_calculator():
     if 'username' not in session:
@@ -292,7 +263,6 @@ def finance():
                 data['finances'][username][month][entry_type][description] = amount
                 save_data(data)
                 
-                flash(f'{entry_type} entry added successfully!', 'success')
                 return redirect(url_for('finance'))
     
     # Set default month to current month if not already set

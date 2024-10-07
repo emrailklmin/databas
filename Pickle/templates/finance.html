@@ -6,6 +6,7 @@
     <title>Personal Finance Tracker</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@700&display=swap" rel="stylesheet"> <!-- New Font -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,15 +15,33 @@
             background-color: #f5f5f5;
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
+        /* Header styling */
+        .header {
+            width: 100%;
+            padding: 20px;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 36px;
+            color: #3584d9;
+            border-bottom: 2px solid #ccc;
+            position: fixed;
+            top: 0;
+            left: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .header img {
+            height: 40px;
+            vertical-align: middle;
+            margin-right: 15px;
         }
 
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
+            margin-top: 70px; /* Ensure content is below the header */
         }
 
         .form-container {
@@ -46,7 +65,7 @@
         }
 
         button:hover {
-            background-color: #0056b3;
+            background-color: #3f6893;
         }
 
         /* Original structure for Incomes, Expenses, and Savings */
@@ -122,9 +141,8 @@
         }
 
         .return-container {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            align-self: flex-start;
+            margin-bottom: 20px;
         }
 
         .return-button {
@@ -134,48 +152,111 @@
             font-size: 18px;
             cursor: pointer;
         }
+
+        .logout-container {
+            margin-right: 10%;
+        }
+        .logout-container button {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .row-container {
+            display: flex;
+            align-items: center; /* Align items vertically centered */
+            justify-content: center; /* Center the row */
+            gap: 20px; /* Space between elements */
+            margin-bottom: 20px; /* Space below the row */
+        }
+
+        .row-container form {
+            display: flex;
+            align-items: center;
+        }
+
+        .row-container form label {
+            margin-right: 10px; /* Space between label and select */
+        }
+
+        .form-container {
+            display: flex;
+            gap: 10px; /* Space between form fields */
+        }
     </style>
 </head>
 <body>
 
-    <h1>Personal Finance Tracker</h1>
-    <h1>Finance for {{ month }}</h1>
-
-    <!-- Return Button -->
-    <div class="return-container">
-        <form action="{{ url_for('month') }}" method="GET">
-            <button type="submit" class="return-button">
-                <i class="fas fa-arrow-left"></i> <!-- Pilikon -->
-            </button>
-        </form>
-    </div>
-
-    <!-- Month Select -->
-    <form method="POST" action="{{ url_for('finance') }}">
-        <label for="month-select">Select Month:</label>
-        <select id="month-select" name="selected_month" onchange="this.form.submit()">
-            {% for month_option in months %}
-                <option value="{{ month_option }}" {% if month_option == current_month %}selected{% endif %}>
-                    {{ month_option }}
-                </option>
-            {% endfor %}
-        </select>
-    </form>
-
-    <div class="container">
-        <!-- Form Section -->
-        <div class="form-container">
-            <form method="POST" action="{{ url_for('finance') }}">
-                <input type="text" name="description" placeholder="Description" required>
-                <input type="number" name="amount" placeholder="Amount" min="0" required>
-                <select name="type" required>
-                    <option value="Income">Income</option>
-                    <option value="Expense">Expense</option>
-                    <option value="Savings">Savings</option>
-                </select>
-                <button type="submit">Add</button>
+    <!-- Elegant Header Section with Logo and Logout -->
+    <div class="header">
+        <!-- Logo and Title -->
+        <div class="logo-title">
+            <img src="{{ url_for('static', filename='$icon.webp') }}" alt="Logo">
+            Finance Tracker
+        </div>
+        
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <form action="{{ url_for('logout') }}" method="GET">
+                <button type="submit">Logout</button>
             </form>
         </div>
+    </div>
+
+
+    <!-- Main Content Below Header -->
+    <div class="container">
+        <!-- Return Button and Current Month -->
+        <div style="display: flex; align-items: center; width: 100%;">
+            <!-- Return Button (left aligned) -->
+            <div class="return-container" style="flex: 1;">
+                <form action="{{ url_for('finance_home') }}" method="GET">
+                    <button type="submit" class="return-button">
+                        <i class="fas fa-arrow-left"></i> <!-- Arrow Icon -->
+                    </button>
+                </form>
+            </div>
+    
+            <!-- Current Month Display (centered) -->
+            <div class="current-month" style="flex: 2; text-align: center;">
+                <span style="font-size: 36px; font-weight: bold;">{{ current_month }}</span> <!-- Display the current month -->
+            </div>
+    
+            <!-- Empty div to keep spacing consistent (right side placeholder) -->
+            <div style="flex: 1;"></div>
+        </div>
+    
+
+        <!-- Flex Container to Align on Same Row -->
+        <div class="row-container">
+            <!-- Select Month Section -->
+            <form method="POST" action="{{ url_for('finance') }}">
+                <label for="month-select">Select Month:</label>
+                <select id="month-select" name="selected_month" onchange="this.form.submit()">
+                    {% for month_option in months %}
+                        <option value="{{ month_option }}" {% if month_option == current_month %}selected{% endif %}>
+                            {{ month_option }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </form>
+
+            <!-- Form Section -->
+            <div class="form-container">
+                <form method="POST" action="{{ url_for('finance') }}">
+                    <input type="text" name="description" placeholder="Description" required>
+                    <input type="number" name="amount" placeholder="Amount" min="0" required>
+                    <select name="type" required>
+                        <option value="Income">Income</option>
+                        <option value="Expense">Expense</option>
+                        <option value="Savings">Savings</option>
+                    </select>
+                    <button type="submit">Add</button>
+                </form>
+            </div>
+        </div>
+
 
         <!-- Incomes, Expenses, and Savings sections -->
         <div class="summary-container">
@@ -265,13 +346,6 @@
                 // Plot the stacked bar chart
                 Plotly.newPlot(stackedBarChartElement, stackedBarChartData.data, stackedBarChartData.layout);
             </script>
-
-        <!-- Logout Button -->
-        <div class="logout-container">
-            <form action="{{ url_for('logout') }}" method="GET">
-                <button type="submit">Logout</button>
-            </form>
-        </div>
     </div>
 
 </body>
